@@ -81,7 +81,7 @@
 
     .field { margin-bottom: 14px; }
     .field label { display: block; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; text-transform: uppercase; font-family: 'Barlow Condensed', sans-serif; }
-    .field input { width: 100%; padding: 11px 14px; border-radius: 3px; border: 1px solid var(--border); background: var(--black); color: var(--text); font-size: 14px; font-family: 'Barlow', sans-serif; transition: border-color .15s; appearance: none; }
+    .field input { width: 100%; padding: 11px 14px; border-radius: 3px; border: 1px solid var(--border); background: var(--black); color: var(--text); font-size: 14px; font-family: 'Barlow', sans-serif; transition: border-color .15s; }
     .field input:focus { outline: none; border-color: var(--red); }
 
     .btn-row { display: flex; gap: 8px; }
@@ -104,13 +104,19 @@
     .day-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
     .day-dot.armado { background: var(--border); color: var(--muted); }
     .day-dot.pruebas { background: #4a3000; color: #f0a500; }
+    .day-dot.armado_evento { background: #4a1a00; color: #ff8c42; }
     .day-dot.evento { background: var(--red); color: #fff; }
+    .day-dot.evento_desarme { background: #1a1a4a; color: #7090ee; }
+    .day-dot.desarme { background: #2a2a2a; color: #aaa; }
     .day-label { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; }
-    .day-tipo-select { padding: 6px 10px; border-radius: 3px; border: 1px solid var(--border); background: var(--black); color: var(--muted); font-size: 12px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all .15s; flex-shrink: 0; min-width: 105px; }
+    .day-tipo-select { padding: 6px 10px; border-radius: 3px; border: 1px solid var(--border); background: var(--black); color: var(--muted); font-size: 12px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all .15s; flex-shrink: 0; min-width: 155px; }
     .day-tipo-select:focus { outline: none; border-color: var(--red); }
     .day-tipo-select.armado { border-color: var(--border); color: var(--muted); }
     .day-tipo-select.pruebas { border-color: #f0a500; color: #f0a500; background: #f0a50011; }
+    .day-tipo-select.armado_evento { border-color: #ff8c42; color: #ff8c42; background: #ff8c4211; }
     .day-tipo-select.evento { border-color: var(--red); color: var(--red); background: #CC1A1A11; }
+    .day-tipo-select.evento_desarme { border-color: #7090ee; color: #7090ee; background: #7090ee11; }
+    .day-tipo-select.desarme { border-color: var(--subtle); color: var(--muted); background: #2a2a2a33; }
     .day-time-input { padding: 7px 10px; border-radius: 3px; border: 1px solid var(--border); background: var(--black); color: var(--text); font-size: 13px; font-family: 'Barlow', sans-serif; width: 115px; transition: border-color .15s; flex-shrink: 0; }
     .day-time-input:focus { outline: none; border-color: var(--red); }
 
@@ -149,7 +155,10 @@
     .td-pill { display: inline-block; font-size: 10px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; padding: 3px 10px; border-radius: 99px; }
     .td-pill.armado { background: #f0f0f0; color: #888; }
     .td-pill.pruebas { background: #fff3cc; color: #b07800; }
+    .td-pill.armado_evento { background: #fff0e6; color: #c05000; }
     .td-pill.evento { background: #CC1A1A18; color: #CC1A1A; }
+    .td-pill.evento_desarme { background: #e6ecff; color: #3355bb; }
+    .td-pill.desarme { background: #f0f0f0; color: #555; }
     .citation-footer { margin-top: 16px; padding-top: 12px; border-top: 1px solid #ebebeb; font-size: 11px; color: #ccc; text-align: center; letter-spacing: 1px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; }
 
     .citation-actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -225,6 +234,7 @@
       </div>
     </div>
 
+    <div class="tabs" id="tabs"></div>
     <div class="fl-list" id="fl-list"></div>
 
     <button class="add-toggle" id="add-toggle-btn">+ Agregar freelancer</button>
@@ -259,7 +269,12 @@
   document.getElementById('header-logo-img').src = LOGO_SRC;
 
   const AREAS = {
-    CCTV: { icon: '📡' }
+    CCTV:       { icon: '📡' },
+    Sonido:     { icon: '🎧' },
+    Video:      { icon: '🎥' },
+    Traduccion: { icon: '🌐' },
+    Computers:  { icon: '💻' },
+    Otros:      { icon: '🔧' }
   };
 
   const DEFAULT_FREELANCERS = [
@@ -346,12 +361,15 @@
       const row = document.createElement('div');
       row.className='day-row';
       row.innerHTML=`
-        <div class="day-dot ${d.tipo}">${d.tipo==='evento'?'★':d.tipo==='pruebas'?'◈':'◆'}</div>
+        <div class="day-dot ${d.tipo}">${d.tipo==='evento'?'★':d.tipo==='pruebas'?'◈':d.tipo==='armado_evento'?'◉':d.tipo==='evento_desarme'?'◌':d.tipo==='desarme'?'▽':'◆'}</div>
         <div class="day-label">${fmtDate(d.date)}</div>
         <select class="day-tipo-select ${d.tipo}" data-tipo="${i}">
           <option value="armado" ${d.tipo==='armado'?'selected':''}>Armado</option>
           <option value="pruebas" ${d.tipo==='pruebas'?'selected':''}>Armado y Pruebas</option>
+          <option value="armado_evento" ${d.tipo==='armado_evento'?'selected':''}>Armado y Evento</option>
           <option value="evento" ${d.tipo==='evento'?'selected':''}>Evento</option>
+          <option value="evento_desarme" ${d.tipo==='evento_desarme'?'selected':''}>Evento y Desarme</option>
+          <option value="desarme" ${d.tipo==='desarme'?'selected':''}>Desarme</option>
         </select>
         <input class="day-time-input" type="time" data-day="${i}" value="${d.horario}" placeholder="Horario" />`;
       c.appendChild(row);
@@ -365,7 +383,7 @@
         days[i].tipo=sel.value;
         const dot=sel.closest('.day-row').querySelector('.day-dot');
         dot.className='day-dot '+sel.value;
-        dot.textContent=sel.value==='evento'?'★':sel.value==='pruebas'?'◈':'◆';
+        dot.textContent=sel.value==='evento'?'★':sel.value==='pruebas'?'◈':sel.value==='armado_evento'?'◉':sel.value==='evento_desarme'?'◌':sel.value==='desarme'?'▽':'◆';
         sel.className='day-tipo-select '+sel.value;
         renderList(); // refresh chips
       };
@@ -376,11 +394,22 @@
   document.getElementById('f-fechafin').addEventListener('change', buildDays);
 
   // ---- TABS ----
-  function renderTabs() { /* single area, no tabs needed */ }
+  function renderTabs() {
+    const c=document.getElementById('tabs');
+    c.innerHTML='';
+    Object.keys(AREAS).forEach(name=>{
+      const cnt=Object.values(selected).filter(s=>s.fl.area===name).length;
+      const btn=document.createElement('button');
+      btn.className='tab-btn'+(name===currentTab?' active':'');
+      btn.textContent=AREAS[name].icon+' '+name+(cnt?` (${cnt})`:'');
+      btn.onclick=()=>{ currentTab=name; renderTabs(); renderList(); };
+      c.appendChild(btn);
+    });
+  }
 
   // ---- FL LIST ----
   function renderList() {
-    const list=freelancers;
+    const list=freelancers.filter(f=>f.area===currentTab);
     const c=document.getElementById('fl-list');
     c.innerHTML='';
     if(!list.length){c.innerHTML='<div class="empty-state">No hay freelancers en esta área aún.</div>';return;}
@@ -400,7 +429,7 @@
         const chips=days.map(d=>{
           const on=selDays.has(d.date);
           return `<span class="fl-day-chip ${on?'on':''} ${on?d.tipo:''}" data-flid="${fl.id}" data-date="${d.date}">
-            ${on?(d.tipo==='evento'?'★':d.tipo==='pruebas'?'◈':'◆'):'○'} ${fmtDateShort(d.date)}
+            ${on?(d.tipo==='evento'?'★':d.tipo==='pruebas'?'◈':d.tipo==='armado_evento'?'◉':d.tipo==='evento_desarme'?'◌':d.tipo==='desarme'?'▽':'◆'):'○'} ${fmtDateShort(d.date)}
           </span>`;
         }).join('');
         chipsHtml=`<div class="fl-days-row">${chips}</div>`;
@@ -472,7 +501,7 @@
       };
     });
 
-    document.getElementById('add-form-title').textContent='📡 Nuevo operador — CCTV';
+    document.getElementById('add-form-title').textContent=`${AREAS[currentTab].icon} Nuevo freelancer — ${currentTab}`;
   }
 
   function updateCount(){
@@ -497,7 +526,7 @@
     const nombre=document.getElementById('new-nombre').value.trim();
     const telefono=document.getElementById('new-telefono').value.trim().replace(/\D/g,'');
     if(!nombre) return alert('Completá el nombre.');
-    freelancers.push({id:Date.now(),nombre,area:'CCTV',telefono});
+    freelancers.push({id:Date.now(),nombre,area:currentTab,telefono});
     save(); renderTabs(); renderList();
     document.getElementById('add-form').classList.remove('open');
     document.getElementById('new-nombre').value='';
@@ -526,7 +555,7 @@
         <tr>
           <td>${fmtDateShort(d.date)}</td>
           <td>${fmtTime(d.horario)}</td>
-          <td><span class="td-pill ${d.tipo}">${d.tipo==='evento'?'Evento':d.tipo==='pruebas'?'Armado y Pruebas':'Armado'}</span></td>
+          <td><span class="td-pill ${d.tipo}">${d.tipo==='evento'?'Evento':d.tipo==='pruebas'?'Armado y Pruebas':d.tipo==='armado_evento'?'Armado y Evento':d.tipo==='evento_desarme'?'Evento y Desarme':d.tipo==='desarme'?'Desarme':'Armado'}</span></td>
         </tr>`).join('');
 
       const wrapper=document.createElement('div');
@@ -727,8 +756,8 @@
 
   function buildMensaje(fl, puesto, sala, evento, orden, lugar, flDays) {
     const daysText=flDays.map(d=>{
-      const emoji = d.tipo==='evento' ? '\uD83D\uDCC5' : '\uD83D\uDD27';
-      const label = d.tipo==='evento' ? 'Evento' : d.tipo==='pruebas' ? 'Armado y Pruebas' : 'Armado';
+      const emoji = (d.tipo==='evento'||d.tipo==='evento_desarme') ? '\uD83D\uDCC5' : '\uD83D\uDD27';
+      const label = d.tipo==='evento'?'Evento':d.tipo==='pruebas'?'Armado y Pruebas':d.tipo==='armado_evento'?'Armado y Evento':d.tipo==='evento_desarme'?'Evento y Desarme':d.tipo==='desarme'?'Desarme':'Armado';
       return `${emoji} ${label}: ${fmtDate(d.date)}${d.horario?' - '+fmtTime(d.horario):''}`;
     }).join('\n');
     return `\uD83D\uDCCB Evento: ${evento}\n` +
