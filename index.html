@@ -234,6 +234,9 @@
       </div>
     </div>
 
+    <div style="margin-bottom:14px">
+      <input type="text" id="fl-search" placeholder="🔍 Buscar operador por nombre..." style="width:100%;padding:11px 14px;border-radius:3px;border:1px solid var(--border);background:var(--black);color:var(--text);font-size:14px;font-family:'Barlow',sans-serif;" />
+    </div>
     <div class="tabs" id="tabs"></div>
     <div class="fl-list" id="fl-list"></div>
 
@@ -434,7 +437,8 @@
 
   // ---- FL LIST ----
   function renderList() {
-    const list=freelancers.filter(f=>f.area===currentTab);
+    const searchTerm = (document.getElementById('fl-search')?.value || '').toLowerCase().trim();
+    const list=freelancers.filter(f=>f.area===currentTab && (!searchTerm || f.nombre.toLowerCase().includes(searchTerm)));
     const c=document.getElementById('fl-list');
     c.innerHTML='';
     if(!list.length){c.innerHTML='<div class="empty-state">No hay freelancers en esta área aún.</div>';return;}
@@ -803,6 +807,8 @@
     document.getElementById('summary-list').innerHTML='';
     showView('evento');
   };
+
+  document.getElementById('fl-search').addEventListener('input', () => renderList());
 
   localStorage.removeItem('cr_freelancers');
   renderTabs(); renderList(); updateCount();
