@@ -119,6 +119,10 @@
     .day-tipo-select.desarme { border-color: var(--subtle); color: var(--muted); background: #2a2a2a33; }
     .day-time-input { padding: 7px 10px; border-radius: 3px; border: 1px solid var(--border); background: var(--black); color: var(--text); font-size: 13px; font-family: 'Barlow', sans-serif; width: 115px; transition: border-color .15s; flex-shrink: 0; }
     .day-time-input:focus { outline: none; border-color: var(--red); }
+    .vianda-select { padding: 5px 10px; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; font-size: 11px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.5px; transition: all .15s; flex-shrink: 0; min-width: 90px; background: var(--black); color: var(--muted); }
+    .vianda-select:focus { outline: none; }
+    .vianda-select.si { border-color: #22c55e; color: #22c55e; background: #0a3d0a; }
+    .vianda-select.no { border-color: var(--border); color: var(--subtle); }
 
     /* SELECTED BAR */
     .selected-bar { background: var(--dark); border: 1px solid var(--red); border-radius: 4px; padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -404,7 +408,7 @@
       const dStr = cur.toISOString().slice(0,10);
       const existing = prev.find(d=>d.date===dStr);
       const tipo = existing?.tipo || 'armado';
-      days.push({ date: dStr, tipo, horario: existing?.horario||'' });
+      days.push({ date: dStr, tipo, horario: existing?.horario||'', vianda: existing?.vianda||false });
     }
     renderDays();
     // re-render FL list so day chips update
@@ -430,11 +434,22 @@
           <option value="evento_desarme" ${d.tipo==='evento_desarme'?'selected':''}>Evento y Desarme</option>
           <option value="desarme" ${d.tipo==='desarme'?'selected':''}>Desarme</option>
         </select>
-        <input class="day-time-input" type="time" data-day="${i}" value="${d.horario}" placeholder="Horario" />`;
+        <input class="day-time-input" type="time" data-day="${i}" value="${d.horario}" placeholder="Horario" />
+        <select class="vianda-select ${d.vianda?'si':'no'}" data-vianda="${i}">
+          <option value="no" ${!d.vianda?'selected':''}>No hay</option>
+          <option value="si" ${d.vianda?'selected':''}>✓ Vianda</option>
+        </select>`;
       c.appendChild(row);
     });
     c.querySelectorAll('[data-day]').forEach(inp=>{
       inp.oninput=()=>{ days[+inp.dataset.day].horario=inp.value; };
+    });
+    c.querySelectorAll('[data-vianda]').forEach(sel=>{
+      sel.onchange=()=>{
+        const i=+sel.dataset.vianda;
+        days[i].vianda=sel.value==='si';
+        sel.className='vianda-select '+(days[i].vianda?'si':'no');
+      };
     });
     c.querySelectorAll('[data-tipo]').forEach(sel=>{
       sel.onchange=()=>{
@@ -616,6 +631,7 @@
           <td>${fmtDateShort(d.date)}</td>
           <td>${fmtTime(d.horario)}</td>
           <td><span class="td-pill ${d.tipo}">${d.tipo==='evento'?'Evento':d.tipo==='pruebas'?'Armado y Pruebas':d.tipo==='armado_evento'?'Armado y Evento':d.tipo==='evento_desarme'?'Evento y Desarme':d.tipo==='desarme'?'Desarme':'Armado'}</span></td>
+          <td style="color:${d.vianda?'#22c55e':'#ccc'};font-weight:700">${d.vianda?'✓ Sí':'—'}</td>
         </tr>`).join('');
 
       const wrapper=document.createElement('div');
@@ -648,7 +664,7 @@
               <div class="cf-label">Cronograma</div>
               <div class="cf-value">
                 <table class="days-table">
-                  <thead><tr><th>Fecha</th><th>Horario</th><th>Tipo</th></tr></thead>
+                  <thead><tr><th>Fecha</th><th>Horario</th><th>Tipo</th><th>Vianda</th></tr></thead>
                   <tbody>${daysRows}</tbody>
                 </table>
               </div>
@@ -818,7 +834,8 @@
     const daysText=flDays.map(d=>{
       const emoji = (d.tipo==='evento'||d.tipo==='evento_desarme') ? '\uD83D\uDCC5' : '\uD83D\uDD27';
       const label = d.tipo==='evento'?'Evento':d.tipo==='pruebas'?'Armado y Pruebas':d.tipo==='armado_evento'?'Armado y Evento':d.tipo==='evento_desarme'?'Evento y Desarme':d.tipo==='desarme'?'Desarme':'Armado';
-      return `${emoji} ${label}: ${fmtDate(d.date)}${d.horario?' - '+fmtTime(d.horario):''}`;
+      const viandaText = d.vianda ? ' (Vianda)' : '';
+      return `${emoji} ${label}: ${fmtDate(d.date)}${d.horario?' - '+fmtTime(d.horario):''}${viandaText}`;
     }).join('\n');
     return `\uD83D\uDCCB Evento: ${evento}\n` +
       `\uD83D\uDD22 N de Orden: ${orden}\n` +
